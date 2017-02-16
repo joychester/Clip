@@ -34,7 +34,7 @@ function *run() {
 
   // execute nodejs code
   console.log("Start to clip: " + Date.now());
-  const t = cp.fork(`${__dirname}/clip_sync.js`);
+  const t = cp.fork(`${__dirname}/clip.js`);
 
   yield nightmare
     .goto(url)
