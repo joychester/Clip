@@ -1,17 +1,24 @@
 const robot = require('robotjs'),
+      config = require('config'),
       bmp = require('bmp-js'),
       fs = require('fs'),
-      tinify = require('tinify'),
       Jimp = require('jimp'),
       wait = require('wait-promise');
 
+var clipConfig = config.get('Clip');
+
+// Load from default config file
+var deletebmp = clipConfig.get('deletebmp'),
+    captureInterval = clipConfig.get('captureInterval'),
+    timeLimit = clipConfig.get('timeLimit'),
+    pngScale = clipConfig.get('imageCompress');
+
 var imgBufArray = [],
     imgMetaArray = [],
-    deletebmp = true,
-    tinypng = false;
+    indx = 1,
+    complete = [];
 
-tinify.key = "L0stwA6Sy6zQD-mpO4RaLUjACfcU2Uc6";
-
+// take full screenshots by robot lib
 function fullScreenCapture(serial) {
   let ts = Date.now();
   let bmpData = robot.screen.capture();
@@ -24,67 +31,24 @@ function fullScreenCapture(serial) {
   return imgBufArray;
 }
 
+// encode bitmap obj
 function bmpEncode(bitmapObj) {
-    // encode bitmap obj
     let rawData={data:bitmapObj.image, width:bitmapObj.width, height:bitmapObj.height}
     imgBuf = bmp.encode(rawData);
     return imgBuf;
 }
 
-function saveImage(fileName, bmpBuf, delMode, tinyMode) {
-  let bmpFile = fileName + ".bmp";
-  let pngFile = fileName + ".png";
-  let optPngFile = fileName + "_opt.png";
-
-  fs.writeFile(bmpFile, bmpBuf.data, function(err) {
-      if(err) {
-          console.log(err);
-      } else {
-        // convert bmp to png and optimize png file by tinypng
-        Jimp.read(bmpFile).then( function(bmp) {
-          bmp.scale(0.2)
-             .write(pngFile, function (){
-               console.log('convert bmp format to png');
-               if (delMode) {
-                 //remove bmp
-                 fs.unlink(bmpFile, function() {
-                   console.log('origin bmp file deleted.');
-                 });
-               }
-
-               if (tinyMode) {
-                 //png optimization by tinypng
-                 let source = tinify.fromFile(pngFile);
-                 source.toFile(optPngFile, function(err) {
-                   if (err) {
-                     // err happened..
-                     throw err;
-                   } else {
-                     console.log('tinypng file saved');
-                     // remove origin png file and just keep
-                     fs.unlink(pngFile, function() {
-                       console.log('origin png file deleted.');
-                     });
-                   }
-                 });
-               }
-            });
-        });
-      }
-  });
-}
-
-let indx = 1;
 var stopFlag = false;
 
-// waiting for the signal from parent test process
+// waiting for the signal to stop the screen capture from parent test process
 process.on('message', (m) => {
     if (m.clip === 'stop') {
       stopFlag = true;
     }
 });
 
-let promise = wait.every(200).before(5000).until( function() {
+// taking screenshots for every 200ms until 5000ms, for example
+var promise = wait.every(captureInterval).before(timeLimit).until( function() {
 
     fullScreenCapture(indx.toString());
 
@@ -92,16 +56,56 @@ let promise = wait.every(200).before(5000).until( function() {
     return stopFlag;
 });
 
-//after processing the screenshots
+// after processing the screenshots
 promise.then( function() {
   for (let item of imgBufArray) {
     imgMetaArray.push(bmpEncode(item));
   }
+});
 
+// save as a bmp file
+promise.then( function() {
   for (i = 0; i < imgBufArray.length; i++) {
-    console.log("saving images:" + imgBufArray[i].id);
-    saveImage(imgBufArray[i].ts, imgMetaArray[i], deletebmp, tinypng);
+    console.log("saving bmp image:" + imgBufArray[i].id);
+    let bmpFile = imgBufArray[i].ts + ".bmp";
+    let bmpData = imgMetaArray[i].data;
+    fs.writeFileSync(bmpFile, bmpData);
   }
-}).then( function() {
-    console.log('stop the screenshot proc...');
+  console.log("All bmp files saved.");
+});
+
+// convert bmp files to png files
+promise.then( function() {
+  for (i = 0; i < imgBufArray.length; i++) {
+    let item = imgBufArray[i];
+    let bmpFile = item.ts + ".bmp";
+    let pngFile = item.ts + ".png";
+    Jimp.read(bmpFile).then( function (bf){
+      bf.scale(pngScale).write(pngFile, function() {
+        complete.push(bmpFile);
+        console.log('png file converted.');
+      });
+    });
+  }
+});
+
+// waiting for all png files generated
+promise.then( function() {
+  require('deasync').loopWhile(function(){
+    // 'true' will enter the loop;
+    // 'false' will exit the loop;
+    return (complete.length < imgBufArray.length);
+  });
+});
+
+// delete all bmp files
+promise.then( function() {
+  if (deletebmp) {
+    for (i = 0; i < imgBufArray.length; i++) {
+      let bmpFile = complete[i];
+      fs.unlinkSync(bmpFile);
+    }
+    console.log('All bmp files deleted. clip process exit.');
+    process.exit();
+  }
 });

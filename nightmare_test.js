@@ -1,13 +1,14 @@
-
 const Nightmare = require('nightmare'),
+      config = require('config'),
       vo = require('vo'),
       moment = require('moment'),
       cp = require('child_process');
 
+var testConfig = config.get('Test');
 
-var url = "https://www.bing.com/";
+var url = testConfig.get('URL');
 
-const RENDER_TIME_MS = 2000;
+const RENDER_TIME_MS = 250;
 
 
 vo(run)(function(err, result) {
@@ -15,8 +16,12 @@ vo(run)(function(err, result) {
 });
 
 function *run() {
-  // To set full screen on MacOS
-  var nightmare = Nightmare({width: 1400, height: 1080, waitTimeout: 15000, openDevTools: false, show: true,
+
+  var nightmare = Nightmare({ width: testConfig.get('Nightmare.width'),
+      height: testConfig.get('Nightmare.height'),
+      waitTimeout: testConfig.get('Nightmare.testDuration'),
+      openDevTools: testConfig.get('Nightmare.openDevTools'),
+      show: testConfig.get('Nightmare.showBrowser'),
       switches: {
         'ignore-certificate-errors': true
       }});
@@ -25,11 +30,11 @@ function *run() {
 
   yield nightmare
     //load landing page
-    .wait(200);
+    .wait(RENDER_TIME_MS);
 
   // execute nodejs code
   console.log("Start to clip: " + Date.now());
-  const t = cp.fork(`${__dirname}/clip.js`);
+  const t = cp.fork(`${__dirname}/clip_sync.js`);
 
   yield nightmare
     .goto(url)
@@ -38,9 +43,8 @@ function *run() {
   t.send({clip: 'stop'});
 
   yield nightmare
-    .wait(250)
+    .wait(RENDER_TIME_MS)
     .end()
-
 
   console.log("end of the test: " + Date.now());
 }

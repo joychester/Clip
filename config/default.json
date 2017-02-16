@@ -1,0 +1,18 @@
+{
+  "Test": {
+    "URL": "https://www.bing.com/",
+    "Nightmare": {
+      "width": 1400,
+      "height": 1080,
+      "testDuration": 15000,
+      "openDevTools": false,
+      "showBrowser": true
+    }
+  },
+  "Clip": {
+    "deletebmp": true,
+    "captureInterval": 200,
+    "timeLimit": 5000,
+    "imageCompress": 0.2
+  }
+}
