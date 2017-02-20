@@ -1,0 +1,20 @@
+{
+  "name": "clip",
+  "version": "0.0.1",
+  "description": "Auto find critical resource by filmstrips",
+  "main": "nightmare_test.js",
+  "scripts": {
+    "test": "node nightmare_test.js"
+  },
+  "author": "joychester",
+  "dependencies": {
+    "robotjs": "*",
+    "config": "*",
+    "bmp-js": "*",
+    "jimp": "*",
+    "wait-promise": "*",
+    "nightmare": "*",
+    "vo": "*",
+    "moment": "*"
+  }
+}
