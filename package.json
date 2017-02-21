@@ -15,6 +15,7 @@
     "wait-promise": "*",
     "nightmare": "*",
     "vo": "*",
-    "moment": "*"
+    "moment": "*",
+    "nightmare-har-plugin": "*"
   }
 }
