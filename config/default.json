@@ -5,7 +5,7 @@
       "width": 1400,
       "height": 1080,
       "testDuration": 15000,
-      "openDevTools": true,
+      "openDevTools": {"mode": "detach"},
       "showBrowser": true
     }
   },
