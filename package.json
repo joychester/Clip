@@ -16,6 +16,7 @@
     "nightmare": "*",
     "vo": "*",
     "moment": "*",
-    "nightmare-har-plugin": "*"
+    "nightmare-har-plugin": "*",
+    "json-query": "*"
   }
 }
