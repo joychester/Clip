@@ -89,6 +89,6 @@ function *run() {
             resource_obj[a_endTime[ind]] = u;
           });
           // {"1487865242937":"resource1","1487865243011":"resource2","1487865243030":"resource3"}
-          console.log('timings_obj:' + JSON.stringify(resource_obj));
+          // console.log('timings_obj:' + JSON.stringify(resource_obj));
       });
 }

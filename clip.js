@@ -2,6 +2,7 @@ const robot = require('robotjs'),
       config = require('config'),
       bmp = require('bmp-js'),
       fs = require('fs'),
+      path = require('path'),
       Jimp = require('jimp'),
       wait = require('wait-promise');
 
@@ -16,7 +17,9 @@ var deletebmp = clipConfig.get('deletebmp'),
 var imgBufArray = [],
     imgMetaArray = [],
     indx = 1,
-    complete = [];
+    complete = [],
+    splitter = path.sep,
+    screenshotsPath = __dirname + splitter + 'screenshots_' + Date.now() + splitter;
 
 // take full screenshots by robot lib
 function fullScreenCapture(serial) {
@@ -65,11 +68,14 @@ promise.then( function() {
 
 // save as a bmp file
 promise.then( function() {
+  // create screenshots folder
+  fs.mkdirSync(screenshotsPath);
+
   for (i = 0; i < imgBufArray.length; i++) {
     console.log("saving bmp image:" + imgBufArray[i].id);
     let bmpFile = imgBufArray[i].ts + ".bmp";
     let bmpData = imgMetaArray[i].data;
-    fs.writeFileSync(bmpFile, bmpData);
+    fs.writeFileSync(screenshotsPath + bmpFile, bmpData);
   }
   console.log("All bmp files saved.");
 });
@@ -80,9 +86,9 @@ promise.then( function() {
     let item = imgBufArray[i];
     let bmpFile = item.ts + ".bmp";
     let pngFile = item.ts + ".png";
-    Jimp.read(bmpFile).then( function (bf){
-      bf.scale(pngScale).write(pngFile, function() {
-        complete.push(bmpFile);
+    Jimp.read(screenshotsPath + bmpFile).then( function (bf){
+      bf.scale(pngScale).write(screenshotsPath + pngFile, function() {
+        complete.push(screenshotsPath + bmpFile);
         console.log('png file converted.');
       });
     });
