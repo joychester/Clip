@@ -43,9 +43,16 @@ function *run() {
   console.log("Start to clip: " + Date.now());
   const t = cp.fork(`${__dirname}/clip.js`);
 
+  t.on('message', (m) => {
+      console.log('PARENT got message:', m);
+      if (m.bucket !== '') {
+        resultPath = m.bucket;
+      }
+  });
+
   yield nightmare
     .goto(url)
-    .wait(1000);
+    .wait(1500);
 
   t.send({clip: 'stop'});
 
@@ -68,10 +75,14 @@ function *run() {
       // Option2: save the Har file from Chrome devtools
       .getHAR()
       .end()
+      // After Process, Save Har File and Calculate each resource loaded timing
       .then( function(result) {
           console.log("end of the test: " + Date.now());
-          // will write HAR file into local file and visualize it by PerfCascade(?)
-          fs.writeFileSync('sample.har', JSON.stringify(result));
+          // Clean up 'url': 'data:images' entries in har file
+          let h_source = JSON.stringify({log: result});
+          let h_minify = h_source.replace(/"data:image\/.*?"/gi, "\"data:image\"");
+          // write HAR file into local file
+          fs.writeFileSync(resultPath + 'result.har', h_minify);
 
           // parse har file to grab url info and perf timings
           let a_url = jsonQuery('entries[**][request][url]', {data: result}).value;
@@ -89,6 +100,6 @@ function *run() {
             resource_obj[a_endTime[ind]] = u;
           });
           // {"1487865242937":"resource1","1487865243011":"resource2","1487865243030":"resource3"}
-          // console.log('timings_obj:' + JSON.stringify(resource_obj));
+          //console.log('timings_obj:' + JSON.stringify(resource_obj));
       });
 }

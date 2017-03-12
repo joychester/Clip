@@ -1,0 +1,65 @@
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>PerfCascade - HAR and more Waterfall viewer</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- import PerfCascade styles /-->
+    <link rel="stylesheet" href="../node_modules/perf-cascade/dist/perf-cascade.css">
+</head>
+
+<body>
+    <div id="legendHolder"></div>
+    <h1>HAR waterfall viewer by PerfCascade</h1>
+    <div id="output" class="output"></div>
+
+    <script id="harFilePlaceHolder">var jsonData = {}</script>
+
+    <!-- import PerfCascade JS /-->
+    <script src="../node_modules/perf-cascade/dist/perf-cascade.js"></script>
+    <script src="../node_modules/perf-cascade/dist/perf-cascade-file-reader.js"></script>
+
+    <script>
+    /**
+      * functionality for example page
+      * `perfCascade` is a global object if not running in AMD or CommonJS context
+     */
+      (function (perfCascade) {
+
+          /** override selected options for PerfCascade (all have defaults) */
+          var har_options = {
+              showIndicatorIcons: false, //default: true
+              leftColumnWith: 30 //default: 25
+          }
+
+          /** holder DOM element to render PerfCascade into */
+          var outputHolderEl = document.getElementById("output");
+
+          /**
+           * This is where the magic happens
+           */
+          function renderPerfCascadeChart(options, outputHolder, data) {
+              /** remove all children of `outputHolderEl`,
+               * so you can upload new HAR files and get a new SVG  */
+              while (outputHolder.childNodes.length > 0) {
+                  outputHolder.removeChild(outputHolder.childNodes[0])
+              }
+
+              /** pass HAR and options to `newPerfCascadeHar` to generate the SVG element*/
+              var perfCascadeSvg = perfCascade.fromHar(data, options)
+
+              /** append SVG to page - that's it */
+              outputHolder.appendChild(perfCascadeSvg)
+          }
+
+
+          renderPerfCascadeChart(har_options, outputHolderEl, jsonData);
+
+      })(window.perfCascade)
+    </script>
+
+</body>
+</html>

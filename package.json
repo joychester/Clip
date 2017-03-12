@@ -17,6 +17,8 @@
     "vo": "*",
     "moment": "*",
     "nightmare-har-plugin": "*",
-    "json-query": "*"
+    "json-query": "*",
+    "perf-cascade": "*",
+    "cheerio": "*"
   }
 }
