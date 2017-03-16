@@ -7,7 +7,8 @@ var folder_path = '',
     cont = false,
     jmap_files = [],
     selected_pic = '',
-    image_files = [];
+    image_files = [],
+    nav_start = 0;
 
 function isPNG(file) {
     return path.extname(file) === '.png';
@@ -18,6 +19,7 @@ process.on('message', (m) => {
     if (m.bucket !== '') {
       folder_path = m.bucket;
       cont = true;
+      nav_start = m.loadStart;
     }
 });
 
@@ -54,7 +56,10 @@ promise.then( function() {
       selected_pic = image_files[image_files.length - 1];
     }
 
-   console.log("Selected Screenshots TS: " + selected_pic.substr(0, selected_pic.lastIndexOf('.')));
-   process.send( {imgDiff: 'complete'} );
+   let visual_complete_TS = selected_pic.substr(0, selected_pic.lastIndexOf('.'));
+   let visual_complete_duration = visual_complete_TS - nav_start;
+   console.log("Selected Screenshots TS: " + visual_complete_TS);
+   console.log("visual complete duration: " +  visual_complete_duration);
+   process.send( {imgDiff: 'complete', vcd: visual_complete_duration} );
   });
 });

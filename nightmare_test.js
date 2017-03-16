@@ -50,11 +50,15 @@ function *run() {
       }
   });
 
-  yield nightmare
+  var nav_start = yield nightmare
     .goto(url)
-    .wait(1500);
+    .wait(1500)
+    .evaluate( function() {
+      let startTS = window.performance.timing.navigationStart;
+      return startTS;
+    });
 
-  t.send({clip: 'stop'});
+  t.send({clip: 'stop', loadStart: nav_start});
 
   yield nightmare
       .wait(RENDER_TIME_MS)

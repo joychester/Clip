@@ -20,7 +20,10 @@ var imgBufArray = [],
     indx = 1,
     complete = [],
     splitter = path.sep,
-    screenshotsPath = __dirname + splitter + 'screenshots_' + Date.now() + splitter;
+    screenshotsPath = __dirname + splitter + 'screenshots_' + Date.now() + splitter,
+    imgDiff_stopflag = false,
+    transSVG_stopflag = false,
+    visual_complete_duration = 0.0;
 
 // take full screenshots by robot lib
 function fullScreenCapture(serial) {
@@ -42,12 +45,14 @@ function bmpEncode(bitmapObj) {
     return imgBuf;
 }
 
-var stopFlag = false;
+var stopFlag = false,
+    nav_start = 0;
 
 // waiting for the signal to stop the screen capture from parent test process
 process.on('message', (m) => {
     if (m.clip === 'stop') {
       stopFlag = true;
+      nav_start = m.loadStart;
     }
 });
 
@@ -59,7 +64,8 @@ process.on('message', (m) => {
   process.send({ bucket: dirName });
 }(screenshotsPath));
 
-// taking screenshots for every 200ms until 5000ms, for example
+// taking screenshots for every 200ms until 5000ms
+// To-DO: need to handle timeout exception, give it up and exit the process
 var promise = wait.every(captureInterval).before(timeLimit).until( function() {
 
     fullScreenCapture(indx.toString());
@@ -127,28 +133,25 @@ promise.then( function() {
   // start imgDiff.js sub process
   console.log("Start imgDiff process: " + Date.now());
   const diff = cp.fork(`${__dirname}/imgDiff.js`);
-  diff.send({ bucket: screenshotsPath });
+  diff.send({ bucket: screenshotsPath, loadStart: nav_start });
   diff.on('message', (m) => {
         console.log('clip Process got message from imgDiff:', m);
         if (m.imgDiff === 'complete') {
           console.log('imgDiff finished.');
           imgDiff_stopflag = 'true';
-        }
-  });
-});
+          visual_complete_duration = m.vcd;
 
-
-// har file visualization by perfCascade
-promise.then( function() {
-  // start transSVG.js sub process
-  console.log("Start transSVG process: " + Date.now());
-  const svg = cp.fork(`${__dirname}/transSVG.js`);
-  svg.send({bucket: screenshotsPath});
-  svg.on('message', (m) => {
-        console.log('clip Process got message from transSVG:', m);
-        if (m.transSVG === 'complete') {
-          console.log('transSVG finished.');
-          transSVG_stopflag = 'true';
+          // start transSVG.js sub process
+          console.log("Start transSVG process: " + Date.now());
+          const svg = cp.fork(`${__dirname}/transSVG.js`);
+          svg.send({bucket: screenshotsPath, vcd: visual_complete_duration});
+          svg.on('message', (m) => {
+                console.log('clip Process got message from transSVG:', m);
+                if (m.transSVG === 'complete') {
+                  console.log('transSVG finished.');
+                  transSVG_stopflag = 'true';
+                }
+          });
         }
   });
 });
