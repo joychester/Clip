@@ -8,7 +8,8 @@ var folder_path = '',
     jmap_files = [],
     selected_pic = '',
     image_files = [],
-    nav_start = 0;
+    nav_start = 0,
+    pixel_diff_thres = 1.0;
 
 function isPNG(file) {
     return path.extname(file) === '.png';
@@ -44,12 +45,16 @@ promise.then( function() {
   Promise.all(jmap_files).then( function(images) {
     console.log('Start Calculate pixels');
     let baseImg = images.pop();
-    images.forEach( function(img, index) {
+    images.every( function(img, index) {
       img_diff_perc = Jimp.diff(baseImg, img).percent;
       //console.log(img_diff_perc);
-      if (img_diff_perc * 10000 <= 1.0) {
+      if (img_diff_perc * 10000 <= pixel_diff_thres) {
        selected_pic = image_files[index];
+       // exit the loop
+       return false;
       }
+      // keep searching...
+      return true;
     });
     // last screenshots is picked
     if (selected_pic === '') {
