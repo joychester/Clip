@@ -12,7 +12,10 @@
   "Clip": {
     "deletebmp": true,
     "captureInterval": 200,
-    "timeLimit": 5000,
+    "timeLimit": 6000,
     "imageCompress": 0.2
+  },
+  "ImgDiff": {
+    "pixels_diff_threshold": 1.0
   }
 }

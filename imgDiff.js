@@ -1,7 +1,10 @@
 const Jimp = require("jimp"),
+      config = require('config'),
       fs = require("fs"),
       path = require("path"),
       wait = require('wait-promise');
+
+var imgDiffConfig = config.get('ImgDiff');
 
 var folder_path = '',
     cont = false,
@@ -9,7 +12,7 @@ var folder_path = '',
     selected_pic = '',
     image_files = [],
     nav_start = 0,
-    pixel_diff_thres = 1.0;
+    threshold = imgDiffConfig.get('pixels_diff_threshold');
 
 function isPNG(file) {
     return path.extname(file) === '.png';
@@ -44,11 +47,12 @@ promise.then( function() {
 
   Promise.all(jmap_files).then( function(images) {
     console.log('Start Calculate pixels');
+    // will consider to prepare base.png by users as well to do imgdiff
     let baseImg = images.pop();
     images.every( function(img, index) {
       img_diff_perc = Jimp.diff(baseImg, img).percent;
       //console.log(img_diff_perc);
-      if (img_diff_perc * 10000 <= pixel_diff_thres) {
+      if (img_diff_perc * 10000 <= threshold) {
        selected_pic = image_files[index];
        // exit the loop
        return false;
