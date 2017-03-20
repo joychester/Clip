@@ -4,6 +4,7 @@ const cheerio = require('cheerio'),
 
 var folder_path = '',
     cont = false,
+    first_paint_duration = 0,
     visual_complete_duration = 0;
 
 process.on('message', (m) => {
@@ -11,6 +12,7 @@ process.on('message', (m) => {
     if (m.bucket !== '') {
       folder_path = m.bucket;
       cont = true;
+      first_paint_duration = m.fpd;
       visual_complete_duration = m.vcd;
     }
 });
@@ -28,7 +30,7 @@ promise.then( function() {
   let har_source = JSON.parse(buf_har);
   let json_text = JSON.stringify(har_source);
   // add visualComplete custom metric on HAR file, read by perfCascade
-  let updated_har = json_text.replace(/\"pageTimings\":{/, `"pageTimings":{"_visualComplete":${visual_complete_duration},`);
+  let updated_har = json_text.replace(/\"pageTimings\":{/, `"pageTimings":{"_firstPaint":${first_paint_duration},"_visualComplete":${visual_complete_duration},`);
 
   let html_source = buf_html.toString();
   let $ = cheerio.load(html_source);

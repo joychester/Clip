@@ -16,6 +16,7 @@
     "imageCompress": 0.2
   },
   "ImgDiff": {
-    "pixels_diff_threshold": 1.0
+    "first_paint_threshold": 15,
+    "visual_complete_threshold": 1.0
   }
 }

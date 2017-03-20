@@ -24,7 +24,8 @@ var imgBufArray = [],
     screenshotsPath = __dirname + splitter + 'screenshots_' + Date.now() + splitter,
     imgDiff_stopflag = false,
     transSVG_stopflag = false,
-    visual_complete_duration = 0.0;
+    first_paint_duration = 0,
+    visual_complete_duration = 0;
 
 // take full screenshots by robot lib
 function fullScreenCapture(serial) {
@@ -140,12 +141,13 @@ promise.then( function() {
         if (m.imgDiff === 'complete') {
           console.log('imgDiff finished.');
           imgDiff_stopflag = 'true';
+          first_paint_duration = m.fpd;
           visual_complete_duration = m.vcd;
 
           // start transSVG.js sub process
           console.log("Start transSVG process: " + Date.now());
           const svg = cp.fork(`${__dirname}/transSVG.js`);
-          svg.send({bucket: screenshotsPath, vcd: visual_complete_duration});
+          svg.send({bucket: screenshotsPath, fpd: first_paint_duration, vcd: visual_complete_duration});
           svg.on('message', (m) => {
                 console.log('clip Process got message from transSVG:', m);
                 if (m.transSVG === 'complete') {
