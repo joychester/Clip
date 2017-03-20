@@ -2,6 +2,7 @@ const robot = require('robotjs'),
       config = require('config'),
       bmp = require('bmp-js'),
       fs = require('fs'),
+      dasc = require('deasync'),
       path = require('path'),
       Jimp = require('jimp'),
       wait = require('wait-promise'),
@@ -110,7 +111,7 @@ promise.then( function() {
 
 // waiting for all png files generated
 promise.then( function() {
-  require('deasync').loopWhile(function(){
+  dasc.loopWhile(function(){
     // 'true' will enter the loop;
     // 'false' will exit the loop;
     return (complete.length < imgBufArray.length);

@@ -1,6 +1,6 @@
 {
   "Test": {
-    "URL": "https://www.bing.com/",
+    "URL": "https://cn.bing.com/",
     "Nightmare": {
       "width": 1400,
       "height": 1080,

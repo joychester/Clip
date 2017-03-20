@@ -1,7 +1,6 @@
 const Nightmare = require('nightmare'),
       config = require('config'),
       vo = require('vo'),
-      moment = require('moment'),
       cp = require('child_process'),
       harPlugin = require('nightmare-har-plugin'),
       fs = require('fs'),

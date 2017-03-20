@@ -15,10 +15,10 @@
     "wait-promise": "*",
     "nightmare": "*",
     "vo": "*",
-    "moment": "*",
     "nightmare-har-plugin": "*",
     "json-query": "*",
     "perf-cascade": "*",
-    "cheerio": "*"
+    "cheerio": "*",
+    "deasync": "*"
   }
 }
