@@ -66,14 +66,19 @@ process.on('message', (m) => {
   process.send({ bucket: dirName });
 }(screenshotsPath));
 
-// taking screenshots for every 200ms until 5000ms
-// To-DO: need to handle timeout exception, give it up and exit the process
+// taking screenshots for every 200ms until TimeLimit
 var promise = wait.every(captureInterval).before(timeLimit).until( function() {
 
     fullScreenCapture(indx.toString());
     indx++;
 
     return stopFlag;
+});
+
+// Catch Clip process timeout exception, give it up and exit the process
+promise.catch(function(err){
+	console.log('[ERROR]: Clip Process terminated:' + err.message);
+  process.exit(1);
 });
 
 // after processing the screenshots
