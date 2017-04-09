@@ -15,8 +15,10 @@ var url = testConfig.get('URL');
 const RENDER_TIME_MS = 250;
 
 vo(run)(function(err, result) {
-  console.log('[ERROR]: Nightmare Test Failed, Abort...');
-  if (err) throw err.message;
+  if (err) {
+    console.log('[ERROR]: Nightmare Test Failed, Abort...');
+    throw err.message;
+  }
 });
 
 function *run() {
